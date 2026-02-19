@@ -9,8 +9,7 @@ This Project solves this by integrating Mamba-2 with Recall with Reasoning (RwR)
 
 Playlist: 
 
-<iframe width="560" height="315" src="https://www.youtube.com/embed/videoseries?si=ZJaz4n2CJBaj5uN3&amp;list=PLSZgsZc5eaKnr3baTQ-nRyDfnee3KgHU4" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
-
+[YouTube Playlist](https://youtube.com/playlist?list=PLSZgsZc5eaKnr3baTQ-nRyDfnee3KgHU4)
 
 ## Roadmap / Milestones
 Phase 1: Environment setup and Mamba-2 baseline integration.
