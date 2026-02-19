@@ -3,7 +3,7 @@
 ## Overview
 Many Current TTS models suffer from a fundamental limitation, they map text directly to acoustic features without understanding the underlying context. They are highly performant but lack empathy, struggling to properly render subtext, irony, or sarcasm. While Transformer-based models can be forced to reason using Chain-of-Thought (CoT), their quadratic complexity makes streaming Reasoning expensive and introduces  latency.
 
-This Project solves this by integrating Mamba-2 with Recall with Reasoning (RwR), by distilling reasoning traces from a teacher LLM, this model actively generates a thought chain to evaluate emotional intent before generating speech—all within $O(N)$ linear time and with a constant memory footprint $O(1)$.
+This Project solves this by integrating Mamba-2 with Recall with Reasoning (RwR), by distilling reasoning traces from a teacher LLM, this model actively generates a thought chain to evaluate emotional intent before generating speech within $O(N)$ linear time and with a constant memory footprint $O(1)$.
 
 ## Video Updates
 
