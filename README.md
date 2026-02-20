@@ -1,4 +1,13 @@
-# FYP
+# Emotional TTS
+### Name: Maximilian Wong Junlin
+### FYP ID: CCDS25-1035
+### Project Title: generating emotional speech (emotional TTS)
+### Supervisor: Prof Chng Eng Siong
+
+### Start Date: 12 Jan 2026
+### End Date: 19 Oct 2026
+
+
 
 ## Overview
 Many Current TTS models suffer from a fundamental limitation, they map text directly to acoustic features without understanding the underlying context, performing well but failing to express emotion natrually or accurately, struggling to properly convey more nuanced natrualspeech. While Transformer-based models can be forced to reason using Chain-of-Thought (CoT), their quadratic complexity makes streaming Reasoning expensive and introduces  latency.
