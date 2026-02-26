@@ -24,8 +24,11 @@ Playlist:
 ## Roadmap / Milestones
 * Phase 1: Environment setup and Mamba-2 baseline integration.
 * Phase 2: Synthesize the Audio-CoT reasoning dataset using GPT-4o teacher distillation.
-* Phase 3: Train the Mamba-2 layers on the generated dataset.
+* Phase 3: Pretrain the Mamba-2 layers on the generated dataset.
+* Phase 4: Post-training and optimizing model
 * Phase 4: Benchmark against other models.
+<img width="2752" height="1502" alt="unnamed" src="https://github.com/user-attachments/assets/b4e31f16-dbd8-4c7b-a3c2-81c4ab7c8918" />
+
 
 ## References
 
