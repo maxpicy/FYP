@@ -32,7 +32,7 @@ Playlist:
 
 ## Contact
 * **Email**: [max.wjl@gmail.com](mailto:max.wjl@gmail.com)
-* **LinkedIn**: [linkedin.com/in/maximilian-wong-933008b5](www.linkedin.com/in/maximilian-wong-933008b5)
+* **LinkedIn**: [linkedin.com/in/maximilian-wong-933008b5](https://www.linkedin.com/in/maximilian-wong-933008b5)
 
 ## References
 
