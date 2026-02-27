@@ -30,6 +30,10 @@ Playlist:
 <img width="2752" height="1502" alt="unnamed" src="https://github.com/user-attachments/assets/b4e31f16-dbd8-4c7b-a3c2-81c4ab7c8918" />
 
 
+## Contact
+* **Email**: [max.wjl@gmail.com](mailto:max.wjl@gmail.com)
+* **LinkedIn**: [linkedin.com/in/maximilian-wong-933008b5](www.linkedin.com/in/maximilian-wong-933008b5)
+
 ## References
 
 *	H. Zen, K. Tokuda, and A. W. Black, “Statistical parametric speech synthesis,” Speech Commun., vol. 51, no. 11, pp. 1039–1064, Nov. 2009, doi: 10.1016/j.specom.2009.04.004. Available: http://dx.doi.org/10.1016/j.specom.2009.04.004
