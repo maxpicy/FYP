@@ -10,9 +10,16 @@
 
 
 ## Overview
-Many Current TTS models suffer from a fundamental limitation, they map text directly to acoustic features without understanding the underlying context, performing well but failing to express emotion natrually or accurately, struggling to properly convey more nuanced natrualspeech. While Transformer-based models can be forced to reason using Chain-of-Thought (CoT), their quadratic complexity makes streaming Reasoning expensive and introduces  latency.
+Many current TTS models suffer from a fundamental limitation: they map text directly to acoustic features without understanding the underlying context. They perform well but fail to express emotion naturally or accurately, and struggle to convey more nuanced natural speech. While Transformer-based models can be forced to reason using Chain-of-Thought (CoT), their quadratic complexity makes streaming reasoning expensive and introduces latency.
 
-This Project aims address the challenges of latency and emotional expressivity by integrating Mamba-2 with Interleaved Recall with Reasoning (RwR) in a TTS context.
+This project measures whether a pure Mamba-2 backbone can learn block-sequential CoT for expressive speech. Before it speaks, the model writes a think block with three parts:
+* a short description of the delivery;
+* emotion, pace and pitch tags;
+* a word-level prosody plan of pitch, duration and energy.
+
+It then generates the speech as Fish S2 codec tokens. The backbone generates codebook 0, and a small Mamba-2 depth module generates codebooks 1 to 9. A hybrid (the top 4 Mamba layers replaced by attention) and a transformer (Pythia-1.4B) were trained the same way, on the same data, as the comparison.
+
+With their own plans, the transformer leads on every evaluation list, and the hybrid shows no reliable difference from the pure model. The paper below has the full results.
 
 
 ## Video Updates
@@ -22,38 +29,100 @@ Playlist:
 [YouTube Playlist](https://youtube.com/playlist?list=PLSZgsZc5eaKnr3baTQ-nRyDfnee3KgHU4)
 
 ## Roadmap / Milestones
-* Phase 1: Environment setup and Mamba-2 baseline integration.
-* Phase 2: Synthesize the Audio-CoT reasoning dataset using GPT-4o teacher distillation.
-* Phase 3: Pretrain the Mamba-2 layers on the generated dataset.
-* Phase 4: Post-training and optimizing model
-* Phase 4: Benchmark against other models.
+* Phase 1: Environment setup and Mamba-2 baseline integration. (done)
+* Phase 2: Build the CoT dataset: delivery descriptions from teacher LLMs and published style captions, plus word-level prosody plans measured from the audio. (done)
+* Phase 3: Train the Mamba-2 models on the dataset, with a hybrid and a transformer trained the same way. (done)
+* Phase 4: Post-training and optimising the models: the two-stage recipe and the decode. (done)
+* Phase 5: Benchmark on the field's evaluation lists (Seed-TTS, LibriSpeech-PC, EmergentTTS-Eval). (done)
 <img width="2752" height="1502" alt="unnamed" src="https://github.com/user-attachments/assets/b4e31f16-dbd8-4c7b-a3c2-81c4ab7c8918" />
 
+
+## Models and Data
+The weights, the evaluation results and the training corpora are in one Hugging Face repository, [maxpicy/p2cot-tts](https://huggingface.co/maxpicy/p2cot-tts):
+* `two_stage_v2/`: the two-stage models for each backbone (C3, C2, and C3 trained with a second seed).
+* `stage1p_bases/`: the Stage 1′ bases they were trained from.
+* `stage_a/`: the one-stage (Stage A) models.
+* `path_b_renderer/`: the fine-tuned s1-mini renderer used for Path B, with the voice 4200 / 4201 reference clips.
+* `eval/`: every evaluated cell (think blocks, codes, per-row scores), the paired statistics, and an audio sample.
+* `corpus/`: the Stage 1′ and Stage 2 training corpora, in parquet.
+* `code/`: a copy of this repository's code.
+
+## Setup
+The models were trained and evaluated with Python 3.11, CUDA 11.8 and A100 GPUs, in the `pytorch/pytorch:2.6.0-cuda11.8-cudnn9-devel` container. Install the model environment first:
+
+```bash
+pip install -r requirements.txt --no-build-isolation
+```
+
+Decoding codes to audio needs a second environment, the Fish environment (`requirements-fish.txt`), plus two downloads:
+* a [fish-speech](https://github.com/fishaudio/fish-speech) checkout at commit `bc72d1f`;
+* `codec.pth` from [fishaudio/openaudio-s1-mini](https://huggingface.co/fishaudio/openaudio-s1-mini), which is gated and licensed CC BY-NC-SA 4.0.
+
+Point `FISH_SPEECH_REPO` at the checkout and `FISH_CODEC_PTH` at `codec.pth`. `env/` lists both environments exactly as installed.
+
+## Recreating the Results
+**1. Download a model and the prompt lists**
+```bash
+hf download maxpicy/p2cot-tts --include "two_stage_v2/pure_c3/*" --local-dir hf
+hf download maxpicy/p2cot-tts --include "eval/prompt_sets/*" --local-dir hf
+```
+
+**2. Decode**
+
+`decode.sh` uses the paper's decode settings: voice 4200, seed 1234, fp32, decode H temperatures, the two repairs, and the cached state. It writes the think block and the codes. If `FISH_PYTHON` is set, it also writes wav files.
+```bash
+FISH_PYTHON=/path/to/fish/env/bin/python bash decode.sh hf/two_stage_v2/pure_c3 hf/eval/prompt_sets/ext_seedtts_en.jsonl out/pure_c3 selfplan
+```
+Use `noplan` instead of `selfplan` for the no-plan cell. `ROWS=a:b` decodes only those rows, with the same per-row seeds as a full run.
+
+**3. Score**
+
+The scoring follows the field's protocol: whisper-large-v3 with the Whisper normaliser for WER, plus UTMOS22 and completion.
+```bash
+python scripts/eval_suite.py --arm selfplan out/pure_c3/selfplan.jsonl out/pure_c3/selfplan \
+    --whisper openai/whisper-large-v3 --whisper_norm whisper --out out/pure_c3/scores.json
+```
+
+**4. Compare cells**
+
+The paper's scores per cell and per row are under `eval/scores/` on Hugging Face. Paired contrasts come with a bootstrap interval, an exact sign test and Holm correction:
+```bash
+python scripts/paired_stats.py --pair A.json:selfplan B.json:selfplan
+```
+
+**5. Path B**
+
+Path B regenerates codebooks 1 to 9 with the fine-tuned s1-mini renderer, keeping our codebook 0. Download [fishaudio/openaudio-s1-mini](https://huggingface.co/fishaudio/openaudio-s1-mini), copy `path_b_renderer/model.pth` and `config.json` over its files, then:
+```bash
+python scripts/s1mini_render.py --codes out/pure_c3/selfplan.jsonl --out out/pure_c3/pathb.jsonl \
+    --checkpoint <s1-mini folder with our model.pth> --ref_dir hf/path_b_renderer/refs \
+    --voice_map 4200=spk4200,4201=spk4201 --resume
+```
+
+**6. Retrain Stage 2 from a Stage 1′ base**
+```bash
+python scripts/fetch_corpus.py --config stage2_v2 --out_dir data
+hf download maxpicy/p2cot-tts --include "stage1p_bases/pure/*" --local-dir hf
+STAGE=2 ARM=pure TIER=full INIT=hf/stage1p_bases/pure/model.safetensors DATA=data/stage2_v2_train.jsonl bash train.sh
+```
+* `TIER=full` trains C3, and `TIER=tags+plan` trains C2 from the same file.
+* `SEED=2` gives the second training seed.
+* Stage 2 runs 40K steps on 4 A100s; the pure C3 run took about 4 hours.
+
+`STAGE=1p` trains Stage 1′ (`scripts/fetch_corpus.py --config stage1p`) from a Stage 1 base. The Stage 1 bases are not released yet.
+
+**Tests**
+```bash
+python -m pytest tests -q
+```
+Tests that need a GPU or model weights skip themselves when those are absent.
+
+## Licence
+To be decided before the models and data are released. The training data include non-commercial and share-alike sources, and the Fish codec is CC BY-NC-SA 4.0.
 
 ## Contact
 * **Email**: [max.wjl@gmail.com](mailto:max.wjl@gmail.com)
 * **LinkedIn**: [linkedin.com/in/maximilian-wong-933008b5](https://www.linkedin.com/in/maximilian-wong-933008b5)
 
-## References
-
-*	H. Zen, K. Tokuda, and A. W. Black, “Statistical parametric speech synthesis,” Speech Commun., vol. 51, no. 11, pp. 1039–1064, Nov. 2009, doi: 10.1016/j.specom.2009.04.004. Available: http://dx.doi.org/10.1016/j.specom.2009.04.004
-*	Y. Chen et al., “F5-TTS: A fairytaler that fakes fluent and faithful speech with flow matching,” in Proceedings of the 63rd Annual Meeting of the Association for Computational Linguistics (Volume 1: Long Papers), Stroudsburg, PA, USA: Association for Computational Linguistics, 2025, pp. 6255–6271. doi: 10.18653/v1/2025.acl-long.313. Available: http://dx.doi.org/10.18653/v1/2025.acl-long.313
-*	S. E. Eskimez et al., “E2 TTS: Embarrassingly Easy Fully Non-Autoregressive Zero-Shot TTS,” arXiv [eess.AS], Jun. 25, 2024. Available: http://arxiv.org/abs/2406.18009
-*	Z. Du et al., “CosyVoice: A scalable multilingual zero-shot text-to-speech synthesizer based on supervised semantic tokens,” arXiv [cs.SD], Jul. 07, 2024. Available: http://arxiv.org/abs/2407.05407
-*	Z. Du et al., “CosyVoice 2: Scalable streaming speech synthesis with large language models,” arXiv [cs.SD], Dec. 13, 2024. Available: http://arxiv.org/abs/2412.10117
-*	Z. Du et al., “CosyVoice 3: Towards in-the-wild speech generation via scaling-up and post-training,” arXiv [cs.SD], May 23, 2025. Available: http://arxiv.org/abs/2505.17589
-*	Z. Ye et al., “Llasa: Scaling train-time and inference-time compute for Llama-based speech synthesis,” arXiv [eess.AS], Feb. 06, 2025. Available: http://arxiv.org/abs/2502.04128
-*	B. Han et al., “VALL-E R: Robust and efficient zero-shot Text-to-speech synthesis via monotonic alignment,” arXiv [cs.CL], Jun. 12, 2024. Available: http://arxiv.org/abs/2406.07855
-*	H. Hu et al., “Qwen3-TTS Technical Report,” arXiv [cs.SD], Jan. 22, 2026. doi: 10.48550/arXiv.2601.15621. Available: http://dx.doi.org/10.48550/arXiv.2601.15621. [Accessed: Feb. 20, 2026]
-*	A. Vaswani et al., “Attention is all you need,” Aug. 23, 2025. doi: 10.65215/mdcm8z23. Available: https://papers.neurips.cc/paper/7181-attention-is-all-you-need.pdf. [Accessed: Feb. 20, 2026]
-*	H. E. Shim et al., “Generating consistent prosodic patterns from open-source TTS systems,” in Interspeech 2025, ISCA: ISCA, Aug. 2025, pp. 5383–5387. doi: 10.21437/interspeech.2025-2159. Available: http://dx.doi.org/10.21437/interspeech.2025-2159
-*	C. Pouw, A. Alishahi, and W. Zuidema, “A linguistically motivated analysis of intonational phrasing in text-to-speech systems: Revealing gaps in syntactic sensitivity,” in Proceedings of the 29th Conference on Computational Natural Language Learning, Stroudsburg, PA, USA: Association for Computational Linguistics, 2025, pp. 126–140. doi: 10.18653/v1/2025.conll-1.9. Available: http://dx.doi.org/10.18653/v1/2025.conll-1.9
-*	S. Que and A. Ragni, “VisualSpeech: Enhancing prosody modeling in TTS using video,” in Interspeech 2025, ISCA: ISCA, Aug. 2025, pp. 3778–3782. doi: 10.21437/interspeech.2025-1494. Available: http://dx.doi.org/10.21437/interspeech.2025-1494
-*	T. Dao and A. Gu, “Transformers are SSMs: Generalized models and efficient algorithms through structured state space duality,” arXiv [cs.LG], May 31, 2024. Available: http://arxiv.org/abs/2405.21060
-*	A. Gu and T. Dao, “Mamba: Linear-time sequence modeling with selective state spaces,” arXiv [cs.LG], Dec. 01, 2023. Available: http://arxiv.org/abs/2312.00752
-*	S. Kumar, N. Patel, H. Wang, and Y. Zhang, “MambaVoiceCloning: Efficient and expressive text-to-speech via state-space modeling and diffusion control,” in The Fourteenth International Conference on Learning Representations, Oct. 2025. Available: https://openreview.net/pdf?id=0oXyMbPMtP. [Accessed: Feb. 20, 2026]
-*	J. Wei et al., “Chain-of-thought prompting elicits reasoning in large language models,” arXiv [cs.CL], Jan. 27, 2022. Available: http://arxiv.org/abs/2201.11903
-*	“MINI-OMNI-REASONER: Token-Level Thinking-in-Speaking in Large Speech Models.” Available: https://arxiv.org/html/2508.15827v2. [Accessed: Feb. 20, 2026]
-*	Z. Xie and C. Wu, “Mini-Omni: Language models can hear, talk while thinking in streaming,” arXiv [cs.AI], Aug. 29, 2024. Available: http://arxiv.org/abs/2408.16725
-*	Y. Yang et al., “Interleaved Speech-text language models for simple streaming text-to-speech synthesis,” arXiv [eess.AS], Aug. 09, 2025. Available: http://arxiv.org/abs/2412.16102
-*	J.-Y. Ma, T. Fang, Z. Zhang, H. Zhang, H. Mi, and D. Yu, “Recall with reasoning: Chain-of-thought distillation for mamba’s long-context memory and extrapolation,” in Proceedings of the 2025 Conference on Empirical Methods in Natural Language Processing, Stroudsburg, PA, USA: Association for Computational Linguistics, 2025, pp. 4714–4720. doi: 10.18653/v1/2025.emnlp-main.235. Available: http://dx.doi.org/10.18653/v1/2025.emnlp-main.235
+## Paper
+* Maximilian Wong Junlin, “[Paper title],” Final Year Project report, Nanyang Technological University, 2026. Available: [https://www.ntu.edu.sg/](https://www.ntu.edu.sg/)

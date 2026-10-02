@@ -1,0 +1,10 @@
+{
+  "codec": "fish-speech S2 semantic codebook (cb0, vocab 4096) — fish_codec.pth == fishaudio/s1-mini codec.pth (ledger S35)",
+  "what": "cb0 codes that encode SILENCE / PAUSE / CLOSURE frames. Ground truth uses them on 6.8% of frames (94% utterance-interior), and on B-ft-rendered GT those frames are 42 dB quieter than the rest (median -69.6 vs -27.6 dB RMS). GT never emits more than 9 of them in a row (n=498 runs / 99 rows; p99 = 7).",
+  "derived": "2026-09-04, ledger S200. 'attractor' = top-20 codes in the two user-confirmed silent clips (00__2c2 after 'do', 11__3pureC3), covering 89% of their frames; 'gt_edge' = the codes GT emits in its first/last 3 frames. The union is the guard's mask set. Extra members are harmless: no code in real speech runs past the budget.",
+  "attractor": [1391, 1088, 538, 1925, 2609, 1933, 1125, 1640, 2697, 864, 2342, 1360, 1038, 1469, 3735, 656, 1696, 3503, 933, 215],
+  "gt_edge": [2499, 2617, 2123, 2048, 963],
+  "codes": [1391, 1088, 538, 1925, 2609, 1933, 1125, 1640, 2697, 864, 2342, 1360, 1038, 1469, 3735, 656, 1696, 3503, 933, 215, 2499, 2617, 2123, 2048, 963],
+  "gt_run_stats": {"median": 1, "p90": 3, "p99": 7, "max": 9, "runs_ge_12": 0},
+  "recommended": {"budget": 10, "stop_after": 10}
+}

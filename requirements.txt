@@ -1,0 +1,20 @@
+--extra-index-url https://download.pytorch.org/whl/cu118
+torch==2.6.0+cu118
+torchaudio==2.6.0+cu118
+triton==3.2.0
+mamba-ssm==2.2.6.post3
+causal-conv1d==1.6.2.post1
+transformers==4.45.2
+tokenizers==0.20.3
+huggingface-hub==0.25.2
+safetensors==0.8.0
+einops==0.8.2
+numpy==2.2.2
+scipy==1.17.1
+pyarrow==25.0.0
+librosa==0.11.0
+soundfile==0.14.0
+soxr==1.1.0
+pyworld==0.3.5
+tqdm==4.67.1
+pytest
