@@ -107,7 +107,7 @@ STAGE=2 ARM=pure TIER=full INIT=hf/stage1p_bases/pure/model.safetensors DATA=dat
 ```
 * `TIER=full` trains C3, and `TIER=tags+plan` trains C2 from the same file.
 * `SEED=2` gives the second training seed.
-* Stage 2 runs 40K steps on 4 A100s; the pure C3 run took about 4 hours.
+* Stage 2 runs 40K steps on 4 A100s. The pure C3 run took about 4 hours.
 
 `STAGE=1p` trains Stage 1′ (`scripts/fetch_corpus.py --config stage1p`) from a Stage 1 base. The Stage 1 bases are not released yet.
 
@@ -118,7 +118,12 @@ python -m pytest tests -q
 Tests that need a GPU or model weights skip themselves when those are absent.
 
 ## Licence
-To be decided before the models and data are released. The training data include non-commercial and share-alike sources, and the Fish codec is CC BY-NC-SA 4.0.
+Each part carries the most open licence its sources allow. All of them only ask that you credit and cite the paper below.
+* **Code (this repository):** [MIT](LICENSE).
+* **Model weights and evaluation results** (`two_stage_v2/`, `stage1p_bases/`, `stage_a/`, `eval/` on Hugging Face): [CC BY-NC 4.0](https://creativecommons.org/licenses/by-nc/4.0/). Part of the training data (Emilia, EARS) is non-commercial, so the weights are too, as with other Emilia-trained models such as F5-TTS.
+* **Training corpus and Path B renderer** (`corpus/`, `path_b_renderer/`): [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/). The corpus contains ParaSpeechCaps captions, and the renderer is fine-tuned from openaudio-s1-mini. Both are share-alike.
+
+The Hugging Face repository's `LICENSE` lists every source. The Fish codec needed to hear the output is not included, and is CC BY-NC-SA 4.0.
 
 ## Contact
 * **Email**: [max.wjl@gmail.com](mailto:max.wjl@gmail.com)
