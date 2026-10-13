@@ -1,4 +1,4 @@
-# fetch_corpus.py: Downloads a corpus config from maxpicy/p2cot-tts (corpus/) and writes the JSONL train.py reads.
+# fetch_corpus.py: Downloads a corpus config from maxpicy/mamba-cot-tts (corpus/) and writes the JSONL train.py reads.
 
 import argparse
 import json
@@ -13,7 +13,7 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--config", required=True, choices=["stage1p", "stage2_v2"])
     ap.add_argument("--out_dir", default="data")
-    ap.add_argument("--repo", default="maxpicy/p2cot-tts")
+    ap.add_argument("--repo", default="maxpicy/mamba-cot-tts")
     ap.add_argument("--cache_dir", default=None)
     args = ap.parse_args()
     import pyarrow.parquet as pq

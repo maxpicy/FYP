@@ -38,7 +38,7 @@ Playlist:
 
 
 ## Models and Data
-The weights, the evaluation results and the training corpora are in one Hugging Face repository, [maxpicy/p2cot-tts](https://huggingface.co/maxpicy/p2cot-tts):
+The weights, the evaluation results and the training corpora are in one Hugging Face repository, [maxpicy/mamba-cot-tts](https://huggingface.co/maxpicy/mamba-cot-tts):
 * `two_stage_v2/`: the two-stage models for each backbone (C3, C2, and C3 trained with a second seed).
 * `stage1p_bases/`: the Stage 1′ bases they were trained from.
 * `stage_a/`: the one-stage (Stage A) models.
@@ -63,8 +63,8 @@ Point `FISH_SPEECH_REPO` at the checkout and `FISH_CODEC_PTH` at `codec.pth`. `e
 ## Recreating the Results
 **1. Download a model and the prompt lists**
 ```bash
-hf download maxpicy/p2cot-tts --include "two_stage_v2/pure_c3/*" --local-dir hf
-hf download maxpicy/p2cot-tts --include "eval/prompt_sets/*" --local-dir hf
+hf download maxpicy/mamba-cot-tts --include "two_stage_v2/pure_c3/*" --local-dir hf
+hf download maxpicy/mamba-cot-tts --include "eval/prompt_sets/*" --local-dir hf
 ```
 
 **2. Decode**
@@ -102,7 +102,7 @@ python scripts/s1mini_render.py --codes out/pure_c3/selfplan.jsonl --out out/pur
 **6. Retrain Stage 2 from a Stage 1′ base**
 ```bash
 python scripts/fetch_corpus.py --config stage2_v2 --out_dir data
-hf download maxpicy/p2cot-tts --include "stage1p_bases/pure/*" --local-dir hf
+hf download maxpicy/mamba-cot-tts --include "stage1p_bases/pure/*" --local-dir hf
 STAGE=2 ARM=pure TIER=full INIT=hf/stage1p_bases/pure/model.safetensors DATA=data/stage2_v2_train.jsonl bash train.sh
 ```
 * `TIER=full` trains C3, and `TIER=tags+plan` trains C2 from the same file.
