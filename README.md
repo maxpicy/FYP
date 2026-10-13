@@ -1,4 +1,4 @@
-# Emotional TTS
+# Mamba-CoT-TTS
 ### Name: Maximilian Wong Junlin
 ### FYP ID: CCDS25-1035
 ### Project Title: generating emotional speech (emotional TTS)
@@ -20,21 +20,6 @@ This project measures whether a pure Mamba-2 backbone can learn block-sequential
 It then generates the speech as Fish S2 codec tokens. The backbone generates codebook 0, and a small Mamba-2 depth module generates codebooks 1 to 9. A hybrid (the top 4 Mamba layers replaced by attention) and a transformer (Pythia-1.4B) were trained the same way, on the same data, as the comparison.
 
 With their own plans, the transformer leads on every evaluation list, and the hybrid shows no reliable difference from the pure model. The paper below has the full results.
-
-
-## Video Updates
-
-Playlist: 
-
-[YouTube Playlist](https://youtube.com/playlist?list=PLSZgsZc5eaKnr3baTQ-nRyDfnee3KgHU4)
-
-## Roadmap / Milestones
-* Phase 1: Environment setup and Mamba-2 baseline integration. (done)
-* Phase 2: Build the CoT dataset: delivery descriptions from teacher LLMs and published style captions, plus word-level prosody plans measured from the audio. (done)
-* Phase 3: Train the Mamba-2 models on the dataset, with a hybrid and a transformer trained the same way. (done)
-* Phase 4: Post-training and optimising the models: the two-stage recipe and the decode. (done)
-* Phase 5: Benchmark on the field's evaluation lists (Seed-TTS, LibriSpeech-PC, EmergentTTS-Eval). (done)
-<img width="2752" height="1502" alt="unnamed" src="https://github.com/user-attachments/assets/b4e31f16-dbd8-4c7b-a3c2-81c4ab7c8918" />
 
 
 ## Models and Data
