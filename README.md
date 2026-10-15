@@ -22,6 +22,12 @@ It then generates the speech as Fish S2 codec tokens. The backbone generates cod
 With their own plans, the transformer leads on every evaluation list, and the hybrid shows no reliable difference from the pure model. The paper below has the full results.
 
 
+## Video Updates
+
+Playlist: 
+
+[YouTube Playlist](https://youtube.com/playlist?list=PLSZgsZc5eaKnr3baTQ-nRyDfnee3KgHU4)
+
 ## Models and Data
 The weights, the evaluation results and the training corpora are in one Hugging Face repository, [maxpicy/mamba-cot-tts](https://huggingface.co/maxpicy/mamba-cot-tts):
 * `two_stage_v2/`: the two-stage models for each backbone (C3, C2, and C3 trained with a second seed).
